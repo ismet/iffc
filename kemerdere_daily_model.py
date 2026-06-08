@@ -36,6 +36,29 @@ plt.rcParams.update({
 })
 st.set_page_config(page_title="Kemerdere Günlük Akım Tahmin Modeli", page_icon="🏔️", layout="wide")
 
+# ── AUTH ──────────────────────────────────────────────────────────────
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    st.markdown("<div style='text-align:center'><h2>🔐 Kemerdere Akım Tahmin Modeli Girişi</h2></div>", unsafe_allow_html=True)
+    col_l, col_m, col_r = st.columns([1, 1.2, 1])
+    with col_m:
+        with st.form("login_form"):
+            username = st.text_input("Kullanıcı adı")
+            password = st.text_input("Şifre", type="password")
+            submitted = st.form_submit_button("Giriş", use_container_width=True)
+            if submitted:
+                users = st.secrets["auth"]["users"]
+                for u in users:
+                    if u["username"] == username and u["password"] == password:
+                        st.session_state.authenticated = True
+                        st.session_state.username = username
+                        st.rerun()
+                st.error("Kullanıcı adı veya şifre hatalı.")
+    st.stop()
+# ── END AUTH ──────────────────────────────────────────────────────────
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_FLOW = os.path.join(SCRIPT_DIR, "Su_Zaman_Serisi_KMR.xlsx")
 DEFAULT_KMZ = os.path.join(SCRIPT_DIR, "3_HEPPs.kmz")
@@ -836,6 +859,11 @@ def render_rain_animation_map(poly, bands, df_live, today, streams=None):
 st.title("🏔️ Kemerdere Havzası — Günlük Akım Tahmin Modeli")
 st.caption("Hibrit ML (otoregresif + hava/kar-temelli) • Günlük P/T/PET (Open-Meteo) + MODIS günlük SCF (GEE)")
 
+if st.sidebar.button("Çıkış", use_container_width=True):
+    st.session_state.authenticated = False
+    st.session_state.pop("username", None)
+    st.rerun()
+st.sidebar.divider()
 st.sidebar.header("📁 Girdiler")
 flow_up = st.sidebar.file_uploader("Günlük akım (.xlsx) — boşsa Su_Zaman_Serisi_KMR.xlsx", type=["xlsx"])
 kmz_up = st.sidebar.file_uploader("Havza poligonu (.kmz/.kml) — boşsa 3_HEPPs.kmz", type=["kmz", "kml"])
