@@ -28,9 +28,20 @@ Optional (snow cover): `earthengine-api` (GEE)
 - **NASA GIBS**: MODIS NDSI snow cover images
 - **Google Earth Engine**: MODIS daily SCF (optional, requires project ID)
 
+## GEE Auth (optional)
+
+GEE snow cover is non-critical — app continues without it. Auth paths (checked in order):
+1. `st.secrets["GEE_SERVICE_ACCOUNT"]` (JSON string)
+2. Env var `GEE_SERVICE_ACCOUNT_JSON_PATH` (path to JSON key file)
+3. Project ID from sidebar input or env var `EARTHENGINE_PROJECT`
+
+`.streamlit/secrets.toml` is gitignored — never commit secrets.
+
 ## Architecture
 
-- No build system, no tests, no lint config — this is a standalone research app
+- No build system, no tests, no lint config — standalone research app
 - All logic in one file: geometry helpers, API fetches, ML training, plotting, Streamlit UI
-- Caching via `@st.cache_data` and `@st.cache_resource`
+- Caching via `@st.cache_data` (data, TTL 1h–24h) and `@st.cache_resource` (models, persistent)
+- Flow file auto-detects date column ("tarih"/"date") and flow column ("toplam su"); unit conversion handled automatically
 - Model A: autoregressive (Q_lag1-7), Model B: weather-only; hybrid uses A for days 1-3, B for days 4-16
+- RF (200 trees, depth 14) + GBM (300 trees, lr 0.05) ensemble; both hardcoded, not tunable from UI
