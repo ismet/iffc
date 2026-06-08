@@ -2,7 +2,7 @@
 
 ## Overview
 
-Single-file Streamlit app (`kemerdere_daily_model.py`, 1180 lines) for daily streamflow prediction in the Kemerdere basin using hybrid ML (RF + GBM ensemble).
+Single-file Streamlit app (`kemerdere_daily_model.py`, 1208 lines) for daily streamflow prediction in the Kemerdere basin using hybrid ML (RF + GBM ensemble).
 
 ## Run
 
@@ -18,9 +18,11 @@ streamlit run kemerdere_daily_model.py
 
 ## Dependencies
 
-Core: `numpy`, `pandas`, `requests`, `matplotlib`, `scikit-learn`, `streamlit`
-Optional (interactive maps): `folium`, `streamlit-folium`
+Core: `numpy`, `pandas`, `requests`, `matplotlib`, `scikit-learn`, `streamlit`, `Pillow`, `openpyxl`
+Map/visual: `folium`, `streamlit-folium`
 Optional (snow cover): `earthengine-api` (GEE)
+
+Install all: `pip install -r requirements.txt`
 
 ## External APIs (no keys needed)
 
@@ -34,6 +36,8 @@ GEE snow cover is non-critical — app continues without it. Auth paths (checked
 1. `st.secrets["GEE_SERVICE_ACCOUNT"]` (JSON string)
 2. Env var `GEE_SERVICE_ACCOUNT_JSON_PATH` (path to JSON key file)
 3. Project ID from sidebar input or env var `EARTHENGINE_PROJECT`
+
+`weather_daily_*.csv` — cached weather data (intermediate artifact, safe to ignore).
 
 `.streamlit/secrets.toml` is gitignored — never commit secrets.
 
