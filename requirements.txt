@@ -1,0 +1,11 @@
+numpy
+pandas
+requests
+matplotlib
+scikit-learn
+streamlit
+Pillow
+openpyxl
+folium
+streamlit-folium
+earthengine-api

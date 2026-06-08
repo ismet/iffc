@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+    <Document id="46">
+        <Style id="47">
+            <LineStyle id="48">
+                <color>ffff0000</color>
+                <colorMode>normal</colorMode>
+                <width>1.5</width>
+            </LineStyle>
+        </Style>
+        <Style id="49">
+            <LineStyle id="50">
+                <color>ffff0000</color>
+                <colorMode>normal</colorMode>
+                <width>2.2</width>
+            </LineStyle>
+        </Style>
+        <Placemark id="68">
+            <name>22049419</name>
+            <styleUrl>#47</styleUrl>
+            <LineString id="67">
+                <coordinates>40.36667,40.67083,0.0 40.36,40.65833,0.0 40.36167,40.64667,0.0</coordinates>
+            </LineString>
+        </Placemark>
+        <Placemark id="70">
+            <name>22047995</name>
+            <styleUrl>#49</styleUrl>
+            <LineString id="69">
+                <coordinates>40.35808,40.73275,0.0 40.35667,40.72917,0.0 40.36,40.72167,0.0 40.35833,40.71833,0.0 40.36167,40.71583,0.0 40.36083,40.7125,0.0 40.3625,40.71167,0.0 40.3625,40.71,0.0 40.36083,40.70917,0.0 40.36167,40.70667,0.0 40.35833,40.70417,0.0 40.35833,40.7025,0.0 40.355,40.69917,0.0 40.35583,40.69583,0.0 40.355,40.69333,0.0 40.35667,40.68833,0.0 40.36167,40.68583,0.0 40.36417,40.67917,0.0 40.36333,40.67833,0.0 40.36417,40.67667,0.0 40.3625,40.675,0.0 40.36667,40.67083,0.0</coordinates>
+            </LineString>
+        </Placemark>
+        <Placemark id="72">
+            <name>22049431</name>
+            <styleUrl>#47</styleUrl>
+            <LineString id="71">
+                <coordinates>40.36667,40.67083,0.0 40.38417,40.66833,0.0 40.385,40.66417,0.0 40.39167,40.66,0.0</coordinates>
+            </LineString>
+        </Placemark>
+    </Document>
+</kml>
