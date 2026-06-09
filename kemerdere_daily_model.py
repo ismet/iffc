@@ -54,6 +54,7 @@ if not st.session_state.authenticated:
                     if u["username"] == username and u["password"] == password:
                         st.session_state.authenticated = True
                         st.session_state.username = username
+                        st.session_state.is_admin = u.get("is_admin", False)
                         st.rerun()
                 st.error("Kullanıcı adı veya şifre hatalı.")
     st.stop()
@@ -862,14 +863,21 @@ st.caption("Hibrit ML (otoregresif + hava/kar-temelli) • Günlük P/T/PET (Ope
 if st.sidebar.button("Çıkış", use_container_width=True):
     st.session_state.authenticated = False
     st.session_state.pop("username", None)
+    st.session_state.pop("is_admin", None)
     st.rerun()
 st.sidebar.divider()
-st.sidebar.header("📁 Girdiler")
-flow_up = st.sidebar.file_uploader("Günlük akım (.xlsx) — boşsa Su_Zaman_Serisi_KMR.xlsx", type=["xlsx"])
-kmz_up = st.sidebar.file_uploader("Havza poligonu (.kmz/.kml) — boşsa 3_HEPPs.kmz", type=["kmz", "kml"])
-river_up = st.sidebar.file_uploader("Dereler/Akarsular (.kmz/.kml) — opsiyonel", type=["kmz", "kml"])
-gee_project = st.sidebar.text_input("🌍 GEE Proje Kimliği", value=os.environ.get("EARTHENGINE_PROJECT", ""),
-    help="Boşsa kayıtlı proje kullanılır (earthengine set_project). Boş/başarısızsa SCF olmadan devam edilir.")
+if st.session_state.is_admin:
+    st.sidebar.header("📁 Girdiler")
+    flow_up = st.sidebar.file_uploader("Günlük akım (.xlsx) — boşsa Su_Zaman_Serisi_KMR.xlsx", type=["xlsx"])
+    kmz_up = st.sidebar.file_uploader("Havza poligonu (.kmz/.kml) — boşsa 3_HEPPs.kmz", type=["kmz", "kml"])
+    river_up = st.sidebar.file_uploader("Dereler/Akarsular (.kmz/.kml) — opsiyonel", type=["kmz", "kml"])
+    gee_project = st.sidebar.text_input("🌍 GEE Proje Kimliği", value=os.environ.get("EARTHENGINE_PROJECT", ""),
+        help="Boşsa kayıtlı proje kullanılır (earthengine set_project). Boş/başarısızsa SCF olmadan devam edilir.")
+else:
+    flow_up = None
+    kmz_up = None
+    river_up = None
+    gee_project = ""
 
 # ---- Akım dosyasını bytes olarak çöz + GENERİK format seçimi ----
 flow_bytes = None
@@ -880,7 +888,7 @@ elif os.path.exists(DEFAULT_FLOW):
 
 flow_sheet = flow_date_col = flow_q_col = None
 flow_unit_factor = 1.0 / 86400.0; flow_start = "2016-01-01"
-if flow_bytes is not None:
+if st.session_state.is_admin and flow_bytes is not None:
     with st.sidebar.expander("📑 Akım dosyası formatı (generic)", expanded=False):
         try:
             _sheets = pd.ExcelFile(io.BytesIO(flow_bytes)).sheet_names
@@ -896,33 +904,43 @@ if flow_bytes is not None:
         except Exception as _e:
             st.error(f"Akım dosyası okunamadı: {_e}")
 
-st.sidebar.markdown("---")
-st.sidebar.subheader("🗺️ Havza / Nokta")
-pt_mode = st.sidebar.radio("Nokta şeması",
-    ["Tek nokta — havza ortalaması ⭐", "Yükseklik bantları (kar-baskın)", "Grid / Thiessen"], index=0,
-    help="Bu havzada TEK nokta (havza merkezi), çok-noktalı/bant şemalarından belirgin daha iyi sonuç verdi "
-         "(kör test ~0.80 vs ~0.60): yüksek soğuk noktalar fazla kar/erime üretip yaz resesyonunu abartıyor.")
-snow_dom = pt_mode.startswith("Yükseklik")
-single_point = pt_mode.startswith("Tek nokta")
-n_bands, n_points = 3, 16
-if snow_dom:
-    n_bands = st.sidebar.slider("Yükseklik bandı sayısı", 2, 6, 3, 1)
-elif pt_mode.startswith("Grid"):
-    n_points = st.sidebar.slider("Grid nokta sayısı", 4, 30, 12, 1)
+if st.session_state.is_admin:
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🗺️ Havza / Nokta")
+    pt_mode = st.sidebar.radio("Nokta şeması",
+        ["Tek nokta — havza ortalaması ⭐", "Yükseklik bantları (kar-baskın)", "Grid / Thiessen"], index=0,
+        help="Bu havzada TEK nokta (havza merkezi), çok-noktalı/bant şemalarından belirgin daha iyi sonuç verdi "
+             "(kör test ~0.80 vs ~0.60): yüksek soğuk noktalar fazla kar/erime üretip yaz resesyonunu abartıyor.")
+    snow_dom = pt_mode.startswith("Yükseklik")
+    single_point = pt_mode.startswith("Tek nokta")
+    n_bands, n_points = 3, 16
+    if snow_dom:
+        n_bands = st.sidebar.slider("Yükseklik bandı sayısı", 2, 6, 3, 1)
+    elif pt_mode.startswith("Grid"):
+        n_points = st.sidebar.slider("Grid nokta sayısı", 4, 30, 12, 1)
 
-st.sidebar.markdown("---")
-st.sidebar.subheader("❄️ Kar / Kalibrasyon")
-auto_cal = st.sidebar.checkbox("ddf/Tsnow'u otomatik kalibre et", value=True,
-    help="Kar parametrelerini grid-aramayla, hava-temelli modelin doğrulama NSE'sini "
-         "maksimize edecek şekilde seçer. Kapatırsan elle ayarlarsın.")
-if auto_cal:
-    manual_snow = None
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("❄️ Kar / Kalibrasyon")
+    auto_cal = st.sidebar.checkbox("ddf/Tsnow'u otomatik kalibre et", value=True,
+        help="Kar parametrelerini grid-aramayla, hava-temelli modelin doğrulama NSE'sini "
+             "maksimize edecek şekilde seçer. Kapatırsan elle ayarlarsın.")
+    if auto_cal:
+        manual_snow = None
+    else:
+        _ddf = st.sidebar.slider("ddf (derece-gün, mm/°C/gün)", 1.0, 12.0, 4.0, 0.5)
+        _tsnow = st.sidebar.slider("Tsnow (°C)", -2.0, 3.0, 1.0, 0.5)
+        manual_snow = {"ddf": _ddf, "Tsnow": _tsnow, "Tmelt": 0.0}
+    peak_focus = st.sidebar.checkbox("Pik akışlara odaklan", value=True)
+    split_year_tt = st.sidebar.selectbox("Train/Test bölme yılı (test bu yıldan itibaren KÖR)", [2018, 2019, 2020, 2021], index=2)
 else:
-    _ddf = st.sidebar.slider("ddf (derece-gün, mm/°C/gün)", 1.0, 12.0, 4.0, 0.5)
-    _tsnow = st.sidebar.slider("Tsnow (°C)", -2.0, 3.0, 1.0, 0.5)
-    manual_snow = {"ddf": _ddf, "Tsnow": _tsnow, "Tmelt": 0.0}
-peak_focus = st.sidebar.checkbox("Pik akışlara odaklan", value=True)
-split_year_tt = st.sidebar.selectbox("Train/Test bölme yılı (test bu yıldan itibaren KÖR)", [2018, 2019, 2020, 2021], index=2)
+    pt_mode = "Tek nokta — havza ortalaması ⭐"
+    snow_dom = False
+    single_point = True
+    n_bands, n_points = 3, 16
+    auto_cal = True
+    manual_snow = None
+    peak_focus = True
+    split_year_tt = 2020
 Q0 = st.sidebar.number_input("Bugünkü Q₀ (m³/s) — canlı tahmin için", min_value=0.0, value=1.5, step=0.1)
 
 # ---- Girdileri çöz (yükleme ya da varsayılan disk dosyaları) ----
@@ -941,7 +959,8 @@ BHASH = basin_hash(poly["verts"])
 river_src = river_up if river_up is not None else DEFAULT_RIVER
 STREAMS = parse_kmz_lines(river_src) if river_src else None
 if STREAMS:
-    st.sidebar.caption(f"🏞️ {len(STREAMS)} dere/akarsu yüklendi (haritalarda gösterilir).")
+    if st.session_state.is_admin:
+        st.sidebar.caption(f"🏞️ {len(STREAMS)} dere/akarsu yüklendi (haritalarda gösterilir).")
 
 with st.spinner("Havza noktaları üretiliyor..."):
     if single_point:
@@ -964,8 +983,9 @@ c0.metric("Havza alanı", f"{basin_area:.1f} km²")
 c1.metric("Model noktası", f"{NB} bant")
 c2.metric("Akım aralığı", f"{flow_start:%Y-%m} – {flow_end:%Y-%m}")
 c3.metric("Gözlem günü", f"{len(df_flow):,}")
-st.sidebar.download_button("📥 Üretilen noktalar (KMZ)", points_to_kmz_bytes(BANDS, basin_area),
-                           f"kemerdere_points_{BHASH}.kmz", "application/vnd.google-earth.kmz")
+if st.session_state.is_admin:
+    st.sidebar.download_button("📥 Üretilen noktalar (KMZ)", points_to_kmz_bytes(BANDS, basin_area),
+                               f"kemerdere_points_{BHASH}.kmz", "application/vnd.google-earth.kmz")
 
 # ---- Günlük hava (tarihsel) ----
 with st.spinner(f"Günlük hava çekiliyor ({NB} nokta)..."):
@@ -995,8 +1015,9 @@ if auto_cal:
     cal_key = hashlib.md5((str(df_raw.shape) + str(flow_end) + CHASH + str(bool(not df_scf.empty))).encode()).hexdigest()
     with st.spinner("Kar parametreleri kalibre ediliyor (ddf, Tsnow grid-araması)..."):
         snow_params, snow_cal_nse = calibrate_snow_daily(df_raw, WEIGHTS, scf_clim, cal_key)
-    st.sidebar.success(f"❄️ Kalibre: ddf={snow_params['ddf']:.0f}, Tsnow={snow_params['Tsnow']:.0f}°C, "
-                       f"Tmelt={snow_params['Tmelt']:.0f}°C (doğrulama NSE={snow_cal_nse:.2f})")
+    if st.session_state.is_admin:
+        st.sidebar.success(f"❄️ Kalibre: ddf={snow_params['ddf']:.0f}, Tsnow={snow_params['Tsnow']:.0f}°C, "
+                           f"Tmelt={snow_params['Tmelt']:.0f}°C (doğrulama NSE={snow_cal_nse:.2f})")
 else:
     snow_params, snow_cal_nse = manual_snow, None
 
