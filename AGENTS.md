@@ -1,14 +1,23 @@
-# AGENTS.md — Kemerdere Daily Hydrological Model
+# AGENTS.md — Kemerçayır Daily Hydrological Model
 
 ## Overview
 
-Single-file Streamlit app (`kemerdere_daily_model.py`, 1208 lines) for daily streamflow prediction in the Kemerdere basin using hybrid ML (RF + GBM ensemble).
+Single-file Streamlit app (`kemercayir_daily_model.py`, 1236 lines) for daily streamflow prediction in the Kemerçayır basin using hybrid ML (RF + GBM ensemble).
 
 ## Run
 
 ```bash
-streamlit run kemerdere_daily_model.py
+streamlit run kemercayir_daily_model.py
 ```
+
+**Auth required.** The app has a login gate (`st.secrets["auth"]["users"]`). You need a `.streamlit/secrets.toml` with:
+```toml
+[[auth.users]]
+username = "your_user"
+password = "your_pass"
+is_admin = false  # optional, defaults to false
+```
+Without this, the app renders a login form and stops. The file is gitignored — never commit it.
 
 ## Required Files
 
@@ -38,8 +47,6 @@ GEE snow cover is non-critical — app continues without it. Auth paths (checked
 3. Project ID from sidebar input or env var `EARTHENGINE_PROJECT`
 
 `weather_daily_*.csv` — cached weather data (intermediate artifact, safe to ignore).
-
-`.streamlit/secrets.toml` is gitignored — never commit secrets.
 
 ## Architecture
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Kemerdere GÜNLÜK Hidrolojik Tahmin Modeli
+Kemerçayır GÜNLÜK Hidrolojik Tahmin Modeli
 =========================================
 Karakurt AYLIK uygulamasının günlük muadili. Hedef: günlük giriş akımı (m³/s),
 'Toplam Su (m³)/86400' (Su_Zaman_Serisi_KMR.xlsx). Girdiler GÜNLÜK:
@@ -11,7 +11,7 @@ Model: HİBRİT
   - Model B (hava/kar-temelli)        -> orta vade (gün 4-16), tek-seferde
 Her ikisi RF+GBM ensemble. Doğrulama: su-yılı çapraz doğrulama (günlük).
 
-Çalıştırma:  streamlit run kemerdere_daily_model.py
+Çalıştırma:  streamlit run kemercayir_daily_model.py
 """
 
 import os, io, json, hashlib, calendar, base64
@@ -34,14 +34,14 @@ plt.rcParams.update({
     "text.color": "black", "axes.labelcolor": "black", "xtick.color": "black",
     "ytick.color": "black", "axes.edgecolor": "black",
 })
-st.set_page_config(page_title="Kemerdere Günlük Akım Tahmin Modeli", page_icon="🏔️", layout="wide")
+st.set_page_config(page_title="Kemerçayır Günlük Akım Tahmin Modeli", page_icon="🏔️", layout="wide")
 
 # ── AUTH ──────────────────────────────────────────────────────────────
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 if not st.session_state.authenticated:
-    st.markdown("<div style='text-align:center'><h2>🔐 Kemerdere Akım Tahmin Modeli Girişi</h2></div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center'><h2>🔐 Kemerçayır Akım Tahmin Modeli Girişi</h2></div>", unsafe_allow_html=True)
     col_l, col_m, col_r = st.columns([1, 1.2, 1])
     with col_m:
         with st.form("login_form"):
@@ -220,7 +220,7 @@ def auto_generate_points(poly, snow_dominated, n=16, n_bands=4):
 def points_to_kmz_bytes(bands, basin_area_km2=None):
     import xml.sax.saxutils as _sx
     parts = ['<?xml version="1.0" encoding="UTF-8"?>', '<kml xmlns="http://www.opengis.net/kml/2.2">',
-             '<Document>', '<name>Kemerdere Model Noktaları</name>']
+             '<Document>', '<name>Kemerçayır Model Noktaları</name>']
     for b in bands:
         af = float(b.get("area_fraction", 0.0))
         desc = (f"Alan payı: {af:.4f} ({af*basin_area_km2:.2f} km2)" if basin_area_km2 else f"Alan payı: {af:.4f}")
@@ -857,7 +857,7 @@ def render_rain_animation_map(poly, bands, df_live, today, streams=None):
 # =====================================================================
 # ARAYÜZ
 # =====================================================================
-st.title("🏔️ Kemerdere Havzası — Günlük Akım Tahmin Modeli")
+st.title("🏔️ Kemerçayır Havzası — Günlük Akım Tahmin Modeli")
 st.caption("Hibrit ML (otoregresif + hava/kar-temelli) • Günlük P/T/PET (Open-Meteo) + MODIS günlük SCF (GEE)")
 
 if st.sidebar.button("Çıkış", use_container_width=True):
@@ -985,7 +985,7 @@ c2.metric("Akım aralığı", f"{flow_start:%Y-%m} – {flow_end:%Y-%m}")
 c3.metric("Gözlem günü", f"{len(df_flow):,}")
 if st.session_state.is_admin:
     st.sidebar.download_button("📥 Üretilen noktalar (KMZ)", points_to_kmz_bytes(BANDS, basin_area),
-                               f"kemerdere_points_{BHASH}.kmz", "application/vnd.google-earth.kmz")
+                               f"kemercayir_points_{BHASH}.kmz", "application/vnd.google-earth.kmz")
 
 # ---- Günlük hava (tarihsel) ----
 with st.spinner(f"Günlük hava çekiliyor ({NB} nokta)..."):
@@ -1246,7 +1246,7 @@ with tab3:
         st.dataframe(show.style.format({"Q_hybrid": "{:.2f}", "Q_A": "{:.2f}", "Q_B": "{:.2f}",
                                         "P_sum": "{:.1f}", "SCF": "{:.2f}"}), use_container_width=True)
         st.download_button("📥 Tahmin (CSV)", show.to_csv(index=False).encode("utf-8"),
-                           "kemerdere_16gun_tahmin.csv", "text/csv")
+                           "kemercayir_16gun_tahmin.csv", "text/csv")
     st.markdown("---")
     st.subheader("Tarihsel gözlem + model (CSV)")
     dfA_hist2 = df_feat.dropna(subset=feats_ar(df_feat) + [TARGET]).reset_index(drop=True)
@@ -1254,4 +1254,4 @@ with tab3:
     hist_out["Q_A_pred"] = predict_ensemble(A, dfA_hist2)
     hist_out["Q_B_pred"] = predict_ensemble(B, dfA_hist2)
     st.download_button("📥 Tarihsel (CSV)", hist_out.to_csv(index=False).encode("utf-8"),
-                       "kemerdere_tarihsel_model.csv", "text/csv")
+                       "kemercayir_tarihsel_model.csv", "text/csv")
