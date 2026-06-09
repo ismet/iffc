@@ -1129,9 +1129,6 @@ with tab1:
             afsc.set_ylabel("SCF (0-1)"); afsc.set_ylim(0, 1); afsc.grid(True, ls=":"); afsc.legend(fontsize=8, loc="upper right")
             afsc.xaxis.set_major_formatter(mdates.DateFormatter('%d %b')); plt.setp(afsc.get_xticklabels(), rotation=30, ha="right")
             figfsc.tight_layout(); st.pyplot(figfsc); plt.close(figfsc)
-            if cur_scf is not None:
-
-
 with tab2:
     st.subheader("Tarihsel Doğrulama (Günlük)")
     cvtab = []
