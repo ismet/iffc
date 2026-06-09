@@ -1064,7 +1064,7 @@ with tab1:
     st.markdown("---")
     st.subheader("16 Günlük SU TAHMİNİ")
     st.caption("Gün 1-3: Model A (otoregresif, Q₀'dan özyinelemeli). Gün 4-16: Model B (hava/kar-temelli). "
-               "Tahmin SCF'si gün-of-yıl iklimatolojisinden (gözlem değil).")
+               "Tahmin SCF'si tarihi veriden (gözlem değil).")
     if fc.empty:
         st.warning("Tahmin üretilemedi (Open-Meteo forecast boş).")
     else:
@@ -1094,7 +1094,7 @@ with tab1:
         # --- 16 günlük HAVA: tahmin vs uzun dönem (gün-of-yıl) ort + min/max ---
         fcw = feat_live[feat_live["Date"] >= today].sort_values("Date").head(16)[["Date", "T_mean", "P_sum"]].reset_index(drop=True)
         if not fcw.empty:
-            st.markdown("---"); st.subheader("🌤️ 16 Günlük Hava — Tahmin vs Uzun Dönem (gün-of-yıl, ±7g)")
+            st.markdown("---"); st.subheader("🌤️ 16 Günlük Hava — Tahmin vs Uzun Dönem (tarihi, ±7g)")
             tmn, tme, tmx = q_doy_envelope(df_feat, fcw["Date"], col="T_mean", window=7)
             pmn, pme, pmx = q_doy_envelope(df_feat, fcw["Date"], col="P_sum", window=7)
             figw, axt = plt.subplots(figsize=(15, 4.2)); axpr = axt.twinx()
@@ -1113,7 +1113,7 @@ with tab1:
             ht, lt = axt.get_legend_handles_labels(); hp, lp = axpr.get_legend_handles_labels()
             axt.legend(ht + hp, lt + lp, fontsize=7, ncol=2, loc="upper left")
             figw.tight_layout(); st.pyplot(figw); plt.close(figw)
-            st.caption("Havza ortalaması. Kırmızı: sıcaklık, mavi: yağış. Kesik çizgi = uzun dönem (gün-of-yıl) ortalaması, "
+            st.caption("Havza ortalaması. Kırmızı: sıcaklık, mavi: yağış. Kesik çizgi = uzun dönem (tarihi) ortalaması, "
                        "bant = tarihsel min–max (±7 gün penceresi, 2015-2021).")
 
         if "SCF" in fc.columns and fc["SCF"].notna().any():
@@ -1125,7 +1125,7 @@ with tab1:
                                   label="Gözlenen SCF aralığı (tarihsel min–max, ±7 gün)", zorder=1)
                 afsc.plot(fc["Date"], sme, color="#555555", ls="-.", lw=1.4, label="Tarihsel ort. SCF", zorder=2)
             afsc.fill_between(fc["Date"], 0, fc["SCF"], color="#1f9e9e", alpha=0.18, zorder=3)
-            afsc.plot(fc["Date"], fc["SCF"], color="#1f9e9e", marker="h", lw=2, label="Tahmin SCF (gün-of-yıl iklimatolojisi)", zorder=4)
+            afsc.plot(fc["Date"], fc["SCF"], color="#1f9e9e", marker="h", lw=2, label="Tahmin SCF (tarihi veri)", zorder=4)
             afsc.set_ylabel("SCF (0-1)"); afsc.set_ylim(0, 1); afsc.grid(True, ls=":"); afsc.legend(fontsize=8, loc="upper right")
             afsc.xaxis.set_major_formatter(mdates.DateFormatter('%d %b')); plt.setp(afsc.get_xticklabels(), rotation=30, ha="right")
             figfsc.tight_layout(); st.pyplot(figfsc); plt.close(figfsc)
@@ -1184,7 +1184,7 @@ with tab2:
         axsc.grid(True, which="minor", axis="x", ls=":", alpha=0.25)
         axsc.set_title("Havza ortalama günlük kar örtüsü oranı (MODIS MOD10A1, GEE)", fontsize=10, weight="bold")
         figs.tight_layout(); st.pyplot(figs); plt.close(figs)
-        st.caption(f"{len(_sc)} günlük gözlem (bulutlu günler hariç). Tahmin ufkunda gün-of-yıl iklimatolojisi kullanılır.")
+        st.caption(f"{len(_sc)} günlük gözlem (bulutlu günler hariç). Tahmin ufkunda tarihi veri kullanılır.")
 
     # --- Kronolojik TRAIN / TEST (kör test) ---
     st.markdown("---"); st.subheader(f"🧪 Train / Test — kör test: {split_year_tt} ve sonrası")
