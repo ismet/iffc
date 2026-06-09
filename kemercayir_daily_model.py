@@ -631,7 +631,7 @@ def hybrid_forecast(feat_live, A, B, today, Q0, n_fc=16):
     return out
 
 def q_doy_envelope(df_obs, dates, col=TARGET, window=7):
-    """Gözlenen günlük seriden (col) gün-of-yıl (±window) min/ort/max zarfı; `dates`'e hizalı."""
+    """Gözlenen günlük seriden (col) ±window min/ort/max zarfı; `dates`'e hizalı."""
     if df_obs is None or df_obs.empty or col not in df_obs.columns:
         nanarr = np.full(len(list(dates)), np.nan); return nanarr, nanarr.copy(), nanarr.copy()
     s = df_obs.dropna(subset=[col]).copy(); s["doy"] = s["Date"].dt.dayofyear
@@ -1040,7 +1040,7 @@ df_fcw = fetch_daily_forecast(COORDS_STR, BANDS)
 df_live = pd.concat([df_ctx, df_fcw]).drop_duplicates("Date", keep="last").sort_values("Date").reset_index(drop=True)
 df_live["SCF_basin"] = df_live["Date"].dt.dayofyear.map(scf_clim) if scf_clim else np.nan
 # Tahmin SCF'sini HARİTADAKİ GÜNCEL kara sabitle: en güncel gözlenen MODIS SCF'sinden
-# başlat, ~10 günde gün-of-yıl iklimatolojisine harmanla (yoksa iklimatoloji kullanılır).
+# başlat, ~10 günde iklimatolojisine harmanla (yoksa iklimatoloji kullanılır).
 cur_scf, cur_scf_date = (None, None)
 _cur = fetch_current_scf(poly["verts"], today.strftime("%Y-%m-%d")) if gee_ok else None
 if _cur is not None:
@@ -1091,7 +1091,7 @@ with tab1:
         m[2].metric("Ort debi", f"{fc['Q_hybrid'].mean():.2f} m³/s")
         m[3].metric("Min debi", f"{fc['Q_hybrid'].min():.2f} m³/s")
 
-        # --- 16 günlük HAVA: tahmin vs uzun dönem (gün-of-yıl) ort + min/max ---
+        # --- 16 günlük HAVA: tahmin vs uzun dönem ort + min/max ---
         fcw = feat_live[feat_live["Date"] >= today].sort_values("Date").head(16)[["Date", "T_mean", "P_sum"]].reset_index(drop=True)
         if not fcw.empty:
             st.markdown("---"); st.subheader("🌤️ 16 Günlük Hava — Tahmin vs Uzun Dönem (tarihi, ±7g)")
