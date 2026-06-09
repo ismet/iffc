@@ -1062,7 +1062,7 @@ with tab1:
     st.markdown("---")
     render_rain_animation_map(poly, BANDS, df_live, today, STREAMS)
     st.markdown("---")
-    st.subheader("16 Günlük Hibrit Hidrograf")
+    st.subheader("16 Günlük SU TAHMİNİ")
     st.caption("Gün 1-3: Model A (otoregresif, Q₀'dan özyinelemeli). Gün 4-16: Model B (hava/kar-temelli). "
                "Tahmin SCF'si gün-of-yıl iklimatolojisinden (gözlem değil).")
     if fc.empty:
