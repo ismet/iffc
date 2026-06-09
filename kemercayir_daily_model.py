@@ -858,7 +858,7 @@ def render_rain_animation_map(poly, bands, df_live, today, streams=None):
 # ARAYÜZ
 # =====================================================================
 st.title("🏔️ Kemerçayır Havzası — Günlük Akım Tahmin Modeli")
-st.caption("Hibrit ML (otoregresif + hava/kar-temelli) • Günlük P/T/PET (Open-Meteo) + MODIS günlük SCF (GEE)")
+
 
 if st.sidebar.button("Çıkış", use_container_width=True):
     st.session_state.authenticated = False
@@ -941,7 +941,7 @@ else:
     manual_snow = None
     peak_focus = True
     split_year_tt = 2020
-Q0 = st.sidebar.number_input("Bugünkü Q₀ (m³/s) — canlı tahmin için", min_value=0.0, value=1.5, step=0.1)
+Q0 = st.sidebar.number_input("Bugünkü Q₀ (m³/s) — canlı tahmin için", min_value=0.0, value=4.5, step=0.1)
 
 # ---- Girdileri çöz (yükleme ya da varsayılan disk dosyaları) ----
 kmz_src = kmz_up if kmz_up is not None else (DEFAULT_KMZ if os.path.exists(DEFAULT_KMZ) else None)
@@ -1130,10 +1130,7 @@ with tab1:
             afsc.xaxis.set_major_formatter(mdates.DateFormatter('%d %b')); plt.setp(afsc.get_xticklabels(), rotation=30, ha="right")
             figfsc.tight_layout(); st.pyplot(figfsc); plt.close(figfsc)
             if cur_scf is not None:
-                st.caption(f"Başlangıç, **güncel gözlenen MODIS SCF = {cur_scf:.2f}** ({cur_scf_date}) değerine sabitlendi "
-                           "(haritayla tutarlı); sonra ~10 günde gün-of-yıl iklimatolojisine harmanlanır.")
-            else:
-                st.caption("Güncel MODIS SCF çekilemedi → gün-of-yıl iklimatolojisi kullanıldı (haritadaki güncel kardan farklı olabilir).")
+
 
 with tab2:
     st.subheader("Tarihsel Doğrulama (Günlük)")
